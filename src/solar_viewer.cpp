@@ -507,10 +507,13 @@ void Solar_viewer::update_planets_positions()
 
     
     for (Planet* p: planets_) {
-        std::cout<<p->name_<<"\n";
-        p->pos_ = vec4(p->distance_, 0,0, 1);        
-        p->model_matrix_ = mat4::translate(vec4(p->distance_, 0, 0,1)) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_self_);// * mat4::rotate_y(p->angle_sun_);
+        p->pos_ = vec4(p->distance_, 0, 0, 1);        
+        p->model_matrix_ = mat4::translate(vec4(p->distance_, 0, 0, 1)) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_self_); 
+        //p->model_matrix_ = mat4::rotate_y(p->angle_self_) /* mat4::rotate_y(p->angle_sun_) */;
     }
+
+
+
 
 
     /** \todo Update `model_matrix_` and position (`pos_`) for each planet/moon.
