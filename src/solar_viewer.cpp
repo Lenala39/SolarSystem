@@ -496,12 +496,22 @@ void Solar_viewer::paint()
 void Solar_viewer::update_planets_positions()
 {   
     sun_.model_matrix_ = mat4::rotate_y(sun_.angle_self_) * mat4::scale(sun_.radius_);
+    /*
+    mercury_.model_matrix_ = mat4::translate(vec4(mercury_.distance_, 0, 0,1)) * mat4::scale(mercury_.radius_) * mat4::rotate_y(mercury_.angle_self_) * mat4::rotate_y(mercury_.angle_sun_);
+    venus_.model_matrix_ = mat4::translate(vec4(venus_.distance_, 0, 0,1)) * mat4::scale(venus_.radius_) * mat4::rotate_y(venus_.angle_self_) * mat4::rotate_y(venus_.angle_sun_);
+    earth_.model_matrix_ = mat4::translate(vec4(earth_.distance_, 0, 0,1)) * mat4::scale(earth_.radius_) * mat4::rotate_y(earth_.angle_self_) * mat4::rotate_y(earth_.angle_sun_);
+    mars_.model_matrix_ = mat4::translate(vec4(mars_.distance_, 0, 0,1)) * mat4::scale(mars_.radius_) * mat4::rotate_y(mars_.angle_self_) * mat4::rotate_y(mars_.angle_sun_);
+    jupiter_.model_matrix_ = mat4::translate(vec4(jupiter_.distance_, 0, 0,1)) * mat4::scale(jupiter_.radius_) * mat4::rotate_y(jupiter_.angle_self_) * mat4::rotate_y(jupiter_.angle_sun_);
+    moon_.model_matrix_ = mat4::translate(vec4(moon_.distance_, 0, 0,1)) * mat4::scale(moon_.radius_) * mat4::rotate_y(moon_.angle_self_) * mat4::rotate_y(moon_.angle_sun_);
+    */
+
     
     for (Planet* p: planets_) {
-        
-        p->pos_ = vec4(p->distance_, p->distance_, p->distance_, 1);        
-        p->model_matrix_ = mat4::translate(p->distance_) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_self_) * mat4::rotate_y(p->angle_sun_);
+        std::cout<<p->name_<<"\n";
+        p->pos_ = vec4(p->distance_, 0,0, 1);        
+        p->model_matrix_ = mat4::translate(vec4(p->distance_, 0, 0,1)) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_self_);// * mat4::rotate_y(p->angle_sun_);
     }
+
 
     /** \todo Update `model_matrix_` and position (`pos_`) for each planet/moon.
     * 1. Start by positioning all celestial bodies (mercury, venus, earth, mars, jupiter and the earth's moon) considered along one axis.
