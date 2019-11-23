@@ -509,10 +509,10 @@ void Solar_viewer::update_planets_positions()
     for (Planet* p: planets_) {
         // place the moon 
         if (p->name_ == "moon") {
-            // moon is earth distance + distance from earth away from sun
-            p->pos_ = vec4(p->distance_ + earth_.distance_, 0, 0, 1);    
-            p->model_matrix_ = mat4::translate(p->pos_) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_sun_); 
-
+            // pos is is next to earth but moved by its distance to the earth in x
+            p->pos_ = vec4(earth_.model_matrix_(0,3), earth_.model_matrix_(1,3), earth_.model_matrix_(2,3), 1);
+            // 1: scale, 2: translate away from center, 3: rotate around earth, 4: from "roated pos" move to correct pos in space
+            p->model_matrix_ = mat4::translate(p->pos_) * mat4::rotate_y(p->angle_sun_) * mat4::translate(vec4(p->distance_, 0, 0,1)) * mat4::scale(p->radius_); 
             continue;            
         }
         // for all other planets, place at its position on x-axis
