@@ -496,23 +496,32 @@ void Solar_viewer::paint()
 void Solar_viewer::update_planets_positions()
 {   
     sun_.model_matrix_ = mat4::rotate_y(sun_.angle_self_) * mat4::scale(sun_.radius_);
-    /*
-    mercury_.model_matrix_ = mat4::translate(vec4(mercury_.distance_, 0, 0,1)) * mat4::scale(mercury_.radius_) * mat4::rotate_y(mercury_.angle_self_) * mat4::rotate_y(mercury_.angle_sun_);
+    
+    /*mercury_.model_matrix_ = mat4::translate(vec4(mercury_.distance_, 0, 0,1)) * mat4::scale(mercury_.radius_) * mat4::rotate_y(mercury_.angle_self_) * mat4::rotate_y(mercury_.angle_sun_);
     venus_.model_matrix_ = mat4::translate(vec4(venus_.distance_, 0, 0,1)) * mat4::scale(venus_.radius_) * mat4::rotate_y(venus_.angle_self_) * mat4::rotate_y(venus_.angle_sun_);
     earth_.model_matrix_ = mat4::translate(vec4(earth_.distance_, 0, 0,1)) * mat4::scale(earth_.radius_) * mat4::rotate_y(earth_.angle_self_) * mat4::rotate_y(earth_.angle_sun_);
-    mars_.model_matrix_ = mat4::translate(vec4(mars_.distance_, 0, 0,1)) * mat4::scale(mars_.radius_) * mat4::rotate_y(mars_.angle_self_) * mat4::rotate_y(mars_.angle_sun_);
+    mars_.model_matrix_ = mat4::translate(vec4(mercury_.distance_ + 1, 0, 0,1)) * mat4::scale(mars_.radius_) * mat4::rotate_y(mars_.angle_self_) * mat4::rotate_y(mars_.angle_sun_);
     jupiter_.model_matrix_ = mat4::translate(vec4(jupiter_.distance_, 0, 0,1)) * mat4::scale(jupiter_.radius_) * mat4::rotate_y(jupiter_.angle_self_) * mat4::rotate_y(jupiter_.angle_sun_);
     moon_.model_matrix_ = mat4::translate(vec4(moon_.distance_, 0, 0,1)) * mat4::scale(moon_.radius_) * mat4::rotate_y(moon_.angle_self_) * mat4::rotate_y(moon_.angle_sun_);
     */
 
     
     for (Planet* p: planets_) {
-        p->pos_ = vec4(p->distance_, 0, 0, 1);        
-        p->model_matrix_ = mat4::translate(vec4(p->distance_, 0, 0, 1)) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_self_); 
-        //p->model_matrix_ = mat4::rotate_y(p->angle_self_) /* mat4::rotate_y(p->angle_sun_) */;
-    }
+        // place the moon 
+        if (p->name_ == "moon") {
+            // moon is earth distance + distance from earth away from sun
+            p->pos_ = vec4(p->distance_ + earth_.distance_, 0, 0, 1);    
+            p->model_matrix_ = mat4::translate(p->pos_) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_sun_); 
 
-
+            continue;            
+        }
+        // for all other planets, place at its position on x-axis
+        p->pos_ = vec4(p->distance_, 0, 0, 1);    
+        // translate to its position, scale to size and spin around itself 
+        p->model_matrix_ = mat4::rotate_y(p->angle_self_) * mat4::rotate_y(p->angle_sun_) * mat4::translate(p->pos_) * mat4::scale(p->radius_); 
+        
+    } 
+     
 
 
 
@@ -521,7 +530,7 @@ void Solar_viewer::update_planets_positions()
     *   Hints:
     *   x The distance from the rotation's center and the scale to be applied is given for each instance of `Planet`
     *   (that class is used for all bodies, including the moon, even though the moon is no planet).
-    *   - `Planet::distance_` stores the distance to the center of the sun except for the moon (here distance to center of earth).
+    *   x `Planet::distance_` stores the distance to the center of the sun except for the moon (here distance to center of earth).
     * 2. Allow the system the be animated by respecting the rotational angles of all celestial bodies. Assume the following:
     *   x The sun rotates around the y-axis (up), as it is placed at the origin. (see above).
     *   - All planets rotate around the sun, i.e. around the y-axis. The current angle is stored in `Planet::angle_sun_` (except for the moon).
@@ -560,7 +569,7 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
 
 
 	/** \todo Implement a rotating solar system.
-    * 1. Implement the function `Solar_viewer::update_planets_positions()`.
+    * 1. Implement the function `Solar_viewer:: ()`.
     *
     * 2. Complete `Solar_viewer::paint()` and `Solar_viewer::keyboard(...)` to activate camera movement
     *    and render the `stars_` to have a nicer background (this will be similar to rendering the sun).
