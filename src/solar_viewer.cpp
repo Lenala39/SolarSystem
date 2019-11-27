@@ -465,11 +465,13 @@ void Solar_viewer::paint()
 
     radius = look_at_->radius_;
     center = look_at_->pos_;
+    
     if (int(x_angle_) % 90 == 0) {
         x_angle_ += 1;
     }
+
     eye    = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,0, radius * dist_factor_, 1.0) + center;
-    up     = vec4(0,1,0,0);
+    up     = mat4::rotate_x(x_angle_) * vec4(0,1,0,0);
     
     view   = mat4::look_at(vec3(eye), (vec3)center, (vec3)up);
 
