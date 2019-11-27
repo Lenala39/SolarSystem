@@ -218,6 +218,23 @@ void Solar_viewer::keyboard(int key, int scancode, int action, int mods)
          *    - make sure that `2.5 < dist_factor_ < 20.0`
          * Note: the mouse wheel also activates zooming, if you finish this task.
          */
+        //decrease distance (further away)
+        case GLFW_KEY_0:
+        {
+            if(dist_factor_ > 2.6) {
+                dist_factor_ -= 0.1;
+            }
+            break;
+        }
+        
+        //increase distance (closer)
+        case GLFW_KEY_9:
+        {
+            if(dist_factor_ < 19.9) {
+                dist_factor_ += 0.1;
+            }
+            break;
+        }
 
 
         case GLFW_KEY_R:
@@ -446,17 +463,19 @@ void Solar_viewer::paint()
     vec4  center;
     vec4  up;
 
-
-    eye    = vec4(0,0,7,1.0);
-    radius = sun_.radius_;
-    center = sun_.pos_;
+    radius = look_at_->radius_;
+    center = look_at_->pos_;
+    if (int(x_angle_) % 90 == 0) {
+        x_angle_ += 1;
+    }
+    eye    = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,0, radius * dist_factor_, 1.0) + center;
     up     = vec4(0,1,0,0);
+    
     view   = mat4::look_at(vec3(eye), (vec3)center, (vec3)up);
-
 
     yUp_ = up[1];
 
-    vec3 billboard_to_eye = normalize(vec3(eye) - vec3(sun_.pos_));
+    vec3 billboard_to_eye = normalize(vec3(eye) - vec3(look_at_->pos_));
     sunglow_.computeBillboardAngles(billboard_to_eye);
 
     // mono rendering
@@ -510,21 +529,18 @@ void Solar_viewer::update_planets_positions()
         // place the moon 
         if (p->name_ == "moon") {
             // pos is is next to earth but moved by its distance to the earth in x
-            p->pos_ = vec4(earth_.model_matrix_(0,3), earth_.model_matrix_(1,3), earth_.model_matrix_(2,3), 1);
             // 1: scale, 2: translate away from center, 3: rotate around earth, 4: from "roated pos" move to correct pos in space
-            p->model_matrix_ = mat4::translate(p->pos_) * mat4::rotate_y(p->angle_sun_) * mat4::translate(vec4(p->distance_, 0, 0,1)) * mat4::scale(p->radius_); 
+            p->model_matrix_ = mat4::translate(vec4(p->distance_ + earth_.distance_, 0, 0,1)) * mat4::rotate_y(p->angle_sun_) * /*mat4::translate(vec4(p->distance_, 0, 0,1)) */ mat4::scale(p->radius_*3); 
+            p->pos_ = p->model_matrix_ * vec4(0,0,0,1);
             continue;            
         }
         // for all other planets, place at its position on x-axis
-        p->pos_ = vec4(p->distance_, 0, 0, 1);    
         // translate to its position, scale to size and spin around itself 
-        p->model_matrix_ = mat4::rotate_y(p->angle_self_) * mat4::rotate_y(p->angle_sun_) * mat4::translate(p->pos_) * mat4::scale(p->radius_); 
-        
+        p->model_matrix_ = mat4::rotate_y(p->angle_self_) * mat4::rotate_y(p->angle_sun_) * mat4::translate(vec4(p->distance_, 0, 0, 1)) * mat4::scale(p->radius_); 
+        p->pos_ = p->model_matrix_ * vec4(0,0,0,1);    
+
     } 
      
-
-
-
     /** \todo Update `model_matrix_` and position (`pos_`) for each planet/moon.
     * 1. Start by positioning all celestial bodies (mercury, venus, earth, mars, jupiter and the earth's moon) considered along one axis.
     *   Hints:
@@ -533,10 +549,10 @@ void Solar_viewer::update_planets_positions()
     *   x `Planet::distance_` stores the distance to the center of the sun except for the moon (here distance to center of earth).
     * 2. Allow the system the be animated by respecting the rotational angles of all celestial bodies. Assume the following:
     *   x The sun rotates around the y-axis (up), as it is placed at the origin. (see above).
-    *   - All planets rotate around the sun, i.e. around the y-axis. The current angle is stored in `Planet::angle_sun_` (except for the moon).
-    *   - The moon rotates around the the earth, i.e. around a vertical axis through the earth's center. The current angle is stored in `Planet::angle_sun_`.
+    *   x All planets rotate around the sun, i.e. around the y-axis. The current angle is stored in `Planet::angle_sun_` (except for the moon).
+    *   x The moon rotates around the the earth, i.e. around a vertical axis through the earth's center. The current angle is stored in `Planet::angle_sun_`.
     *   x All planets rotate around their own axis. The current angle is stored in `Planet::angle_self_`.
-    *   - Consider disabling face culling in order to render backfaces.
+    *   ? ?Consider disabling face culling in order to render backfaces.
     * 
      *  Hints:
      *  - All planets and the moon are stored in objects named by their name (e.g. earth_, venus_, moon_,...)

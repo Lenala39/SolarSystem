@@ -14,7 +14,7 @@
 
 int main(int argc, char *argv[])
 {
-    Solar_viewer window("Solar System", 24*100, 7*100);
+    Solar_viewer window("Solar System", 24*90, 7*90);
     return window.run();
 }
 

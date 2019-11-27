@@ -140,6 +140,7 @@ private:
 
     /// which planet are we looking at (control with key 1-6)
     Planet* look_at_;
+    Planet* old_look_at_;
 
     /// rotation in x direction around the planet/sun from the original point
     float x_angle_;
