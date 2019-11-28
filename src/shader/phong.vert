@@ -37,5 +37,11 @@ void main()
      *        - Via .xyz you can access the first three components of a vec4
      */
 
+    v2f_texcoord = v_texcoord;
+    v2f_normal = normal_matrix * v_normal;
+    v2f_light = light_position - (modelview_matrix * v_position);
+    v2f_view = (modelview_matrix * v_position) - vec4(0,0,0,1) // vector from point (v_position) to eye in eye space (eye == (0,0,0) in eye space)
+	gl_Position = modelview_projection_matrix * v_position;
+
 
 } 

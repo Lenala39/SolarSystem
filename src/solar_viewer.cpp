@@ -470,6 +470,10 @@ void Solar_viewer::paint()
         x_angle_ += 1;
     }
 
+    if (in_ship_) {
+        // hover slightly behind it and rotate along with it
+    }
+
     eye    = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,0, radius * dist_factor_, 1.0) + center;
     up     = mat4::rotate_x(x_angle_) * vec4(0,1,0,0);
     
@@ -579,6 +583,7 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
 	mat4 mv_matrix;
 	mat4 mvp_matrix;
 	mat3 n_matrix;
+    mat3 normal_matrix;
 
 	// the sun is centered at the origin and -- for lighting -- considered to be a point, so that is the light position in world coordinates
 	vec4 light = vec4(0.0, 0.0, 0.0, 1.0); //in world coordinates
@@ -627,13 +632,24 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     sun_.draw();
 
 
+    //use phong shader for the planets
     for(Planet* planet : planets_)
     {
         m_matrix = planet->model_matrix_;
         mv_matrix  = _view * m_matrix;
         mvp_matrix = _projection * mv_matrix;
+        normal_matrix = transpose(inverse(mat3(planet->model_matrix_(1,1))));
+        
+        
+        phong_shader_.use();
+        phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+        phong_shader_.set_uniform("modelview_matrix", mv_matrix);
+        phong_shader_.set_uniform("normal_matrix", normal_matrix);
+        phong_shader_.set_uniform("light_position", light);
 
-        color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+        phong_shader_.set_uniform("tex", 0);
+        phong_shader_.set_uniform("greyscale", (int)greyscale_);
+        
         planet->draw();
     }
 
