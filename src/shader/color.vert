@@ -30,6 +30,6 @@ void main()
 	*	- change the position of the vertex depending on its angles and `time` with a combination of sin and cos
 	*   - experiment with different combinations of amplitude and frequency until you have a nice flow-like effect
 	**/
-	 gl_Position = modelview_projection_matrix * v_position;
+	gl_Position = modelview_projection_matrix * v_position;
 
 } 

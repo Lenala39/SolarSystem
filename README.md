@@ -101,7 +101,7 @@ A video for comparison can be found in the video directory (`videos/navigation.m
   ![](spaceship_moving.png)
   * Let the sun shine: implement a simple billboard which is a textured quad that always faces the viewer. Fill the texture with color values in `Texture::createSunglowTexture()` to mimic a fading aura around the sun. The result texture should look similar to this:
     ![](sunglow.png)
-  * Then, render it in `Solar_viewer::draw_scene(...)` with the color shader. To make sure, that it always faces the viewer complete `Billboard::computeBillboardAngles(...)`. The result shoul look like
+  * Then, render it in `Solar_viewer::draw_scene(...)` with the color shader. To make sure, that it always faces the viewer complete `Billboard::computeBillboardAngles(...)`. The result should look like
   ![](sun_billboard.png)
   * If you want a video comparison check out the `spaceship.mp4` in the video directory.
 

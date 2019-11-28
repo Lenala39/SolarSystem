@@ -635,11 +635,12 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     //use phong shader for the planets
     for(Planet* planet : planets_)
     {
+        mat3 planet_3x3 = mat3(planet->model_matrix_);
+
         m_matrix = planet->model_matrix_;
         mv_matrix  = _view * m_matrix;
         mvp_matrix = _projection * mv_matrix;
-        normal_matrix = transpose(inverse(mat3(planet->model_matrix_(1,1))));
-        
+        normal_matrix = inverse(transpose(planet_3x3));
         
         phong_shader_.use();
         phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
@@ -651,11 +652,14 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
         phong_shader_.set_uniform("greyscale", (int)greyscale_);
         
         planet->draw();
+        double opengl_error = glGetError();
+        std::cout<<opengl_error<<"\n";
     }
-
-
     // check for OpenGL errors
     glCheckError();
+        
+
+    
 }
 
 void Solar_viewer::randomize_planets()
