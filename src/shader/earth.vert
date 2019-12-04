@@ -26,12 +26,17 @@ uniform vec4 light_position; //in eye space coordinates already
 
 
 
-void main()
-{
+void main() {
     /** \todo 
      * - Copy your working code from the vertex shader of your phong shader.
      *   and continue with the fragment shader
      */
+
+    v2f_texcoord = v_texcoord;
+    v2f_normal = normalize(normal_matrix * v_normal);
+    v2f_light = normalize(light_position.xyz - (modelview_matrix * v_position).xyz);
+    v2f_view = normalize(vec3(0,0,0) - (modelview_matrix * v_position).xyz); // vector from point (v_position) to eye in eye space (eye == (0,0,0) in eye space)
+    gl_Position = modelview_projection_matrix * v_position;
 
 
 } 

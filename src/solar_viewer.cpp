@@ -631,10 +631,20 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     color_shader_.set_uniform("greyscale", (int)greyscale_);
     sun_.draw();
 
+    // stars 
+    m_matrix = mat4::scale(stars_.radius_);
+    mv_matrix = _view * m_matrix;
+    mvp_matrix = _projection * mv_matrix;
+    color_shader_.use();
+    color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+    color_shader_.set_uniform("tex", 0);
+    color_shader_.set_uniform("greyscale", (int)greyscale_);
+    stars_.draw();
+
 
     //use phong shader for the planets
     for(Planet* planet : planets_)
-    {
+    {   
         mat3 planet_3x3 = mat3(planet->model_matrix_);
 
         m_matrix = planet->model_matrix_;
@@ -642,6 +652,20 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
         mvp_matrix = _projection * mv_matrix;
         normal_matrix = inverse(transpose(planet_3x3));
         
+        if( planet->name_ == "earth") {
+            earth_shader_.use();
+            earth_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+            earth_shader_.set_uniform("modelview_matrix", mv_matrix);
+            earth_shader_.set_uniform("normal_matrix", normal_matrix);
+            earth_shader_.set_uniform("light_position", light);
+            earth_shader_.set_uniform("greyscale", (int)greyscale_);
+            earth_shader_.set_uniform("day_texture", 0);
+            earth_shader_.set_uniform("night_texture", 1);
+            earth_shader_.set_uniform("cloud_texture", 2);
+            earth_shader_.set_uniform("gloss_texture", 3);
+        }
+
+        else {
         phong_shader_.use();
         phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
         phong_shader_.set_uniform("modelview_matrix", mv_matrix);
@@ -650,14 +674,13 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
 
         phong_shader_.set_uniform("tex", 0);
         phong_shader_.set_uniform("greyscale", (int)greyscale_);
-        
+        }
+
         planet->draw();
-        double opengl_error = glGetError();
-        std::cout<<opengl_error<<"\n";
     }
     // check for OpenGL errors
     glCheckError();
-        
+    //exit(-1);    
 
     
 }

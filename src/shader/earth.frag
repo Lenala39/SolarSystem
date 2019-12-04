@@ -41,6 +41,55 @@ void main()
     *   - use mix(vec3 a,vec3 b, s) = a*(1-s) + b*s for linear interpolation of two colors
     *   - There is not the one right way to get the desired results. Feel free to use some magic numbers or creative solutions.
      */
+
+    
+    vec3 color = vec3(0.0, 0.0, 0.0);
+	float alpha = 1.0;
+
+    vec3 day_color = texture(day_texture, v2f_texcoord.st).rgb;
+    vec3 night_color = texture(night_texture, v2f_texcoord.st).rgb;
+    float cloud_color = texture(cloud_texture, v2f_texcoord.st).r;
+    float gloss_color = texture(gloss_texture, v2f_texcoord.st).r;
+
+
+    //diffuse lighting
+    vec3 diff = vec3(0,0,0);
+    float diff_angle = dot(v2f_light, v2f_normal);
+    if (diff_angle >= 0.0) {
+        diff = day_color * diff_angle;
+        color += diff;
+    }
+    
+    else {
+        color += night_color;
+    }
+
+    /*//specular light
+    vec3 spec = vec3(0,0,0);
+    vec3 mirrored_light = vec3(0,0,0);
+    mirrored_light = reflect(v2f_light, v2f_normal);
+    float spec_angle = dot(mirrored_light, v2f_view);
+
+    if (diff_angle > 0 && spec_angle > 0) {
+        spec = day_color * pow(spec_angle, shininess);
+        color = color + (spec * gloss_color);
+    }
+    // mix with clouds
+    color = mix(color, vec3(1,1,1), cloud_color);*/
+
+
+    // convert RGB color to YUV color and use only the luminance
+    if (greyscale) color = vec3(0.299*color.r+0.587*color.g+0.114*color.b);
+
+    // add required alpha value
+    f_color = vec4(color, alpha);
     
 
 }
+// 1. Tag - Nacht
+// 2. weicher Übergang
+// 3. Wolken
+// 4. Gloss
+
+// WOKLEN NACHT = dunkler, weil Städte verdeckt
+// Tagsüber = heller, weil weiß
