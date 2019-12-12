@@ -474,8 +474,8 @@ void Solar_viewer::paint()
         // hover slightly behind it and rotate along with it
     }
 
-    eye    = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,0, radius * dist_factor_, 1.0) + center;
-    up     = mat4::rotate_x(x_angle_) * vec4(0,1,0,0);
+    eye    = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,0, radius * dist_factor_, 0.0) + center;
+    up     = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,1,0,0);
     
     view   = mat4::look_at(vec3(eye), (vec3)center, (vec3)up);
 
@@ -542,7 +542,7 @@ void Solar_viewer::update_planets_positions()
         }
         // for all other planets, place at its position on x-axis
         // translate to its position, scale to size and spin around itself 
-        p->model_matrix_ = mat4::rotate_y(p->angle_self_) * mat4::rotate_y(p->angle_sun_) * mat4::translate(vec4(p->distance_, 0, 0, 1)) * mat4::scale(p->radius_); 
+        p->model_matrix_ = mat4::rotate_y(p->angle_sun_) * mat4::translate(vec3(p->distance_, 0, 0)) * mat4::scale(p->radius_) * mat4::rotate_y(p->angle_self_);
         p->pos_ = p->model_matrix_ * vec4(0,0,0,1);    
 
     } 
@@ -645,11 +645,13 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     //use phong shader for the planets
     for(Planet* planet : planets_)
     {   
-        mat3 planet_3x3 = mat3(planet->model_matrix_);
+        
 
         m_matrix = planet->model_matrix_;
         mv_matrix  = _view * m_matrix;
-        mvp_matrix = _projection * mv_matrix;
+        
+		mat3 planet_3x3 = mat3(mv_matrix);
+		mvp_matrix = _projection * mv_matrix;
         normal_matrix = inverse(transpose(planet_3x3));
         
         if( planet->name_ == "earth") {

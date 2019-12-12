@@ -55,14 +55,27 @@ void main()
     //diffuse lighting
     vec3 diff = vec3(0,0,0);
     float diff_angle = dot(v2f_light, v2f_normal);
-    if (diff_angle >= 0.0) {
+	if (diff_angle > 0.1) {
         diff = day_color * diff_angle;
-        color += diff;
+        color = diff;
+    }
+    else if(diff_angle <= 0.1 && diff_angle >= -0.1) {
+		float mixratio = (diff_angle - (-0.1)) / (0.2);
+        color = mix(night_color, (day_color * diff_angle), mixratio);
+    }
+    else {
+        color = night_color;
     }
     
-    else {
-        color += night_color;
-    }
+    /*else if (diff_angle < 0.25 && diff_angle > -0.25) {
+		if(diff_angle < 0.5) {
+			color = mix(color, vec3(0,0,0), day_color);
+		}
+		else {
+			color = mix(color, vec3(0,0,0), night_color);
+		}
+	}*/
+
 
     /*//specular light
     vec3 spec = vec3(0,0,0);
