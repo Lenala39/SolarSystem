@@ -12,6 +12,7 @@
 #include <assert.h>
 #include "lodepng.h"
 #include <algorithm>
+#include "glmath.h"
 
 //=============================================================================
 
@@ -98,15 +99,41 @@ void Texture::createSunglowTexture()
     *   - Make sure that your texture is fully transparent (alpha == 0) at its borders to avoid seeing visible edges
     *	- Experiment with the color and with how fast you change the transparency until the effect satisfies you
     **/
+    float x_center = width/2;
+    float y_center = height/2;
+    
+    float radius = 150;
 
     for (int w = 0; w < width; w++)
     {
         for (int h = 0; h < height; h++)
         {
-            img[(w*width + h) * 4 + 0] = 1.0;//red
-            img[(w*width + h) * 4 + 1] = 1.0;//green
-            img[(w*width + h) * 4 + 2] = 1.0;//blue
-            img[(w*width + h) * 4 + 3] = 1.0;//alpha
+            
+            float x_distance = w - x_center;
+            float y_distance = h - y_center;
+
+            float distance_to_center = sqrt((x_distance * x_distance) + (y_distance * y_distance));
+
+            if (distance_to_center <= radius) {
+                img[(w*width + h) * 4 + 0] = 1.0;//red
+                img[(w*width + h) * 4 + 1] = 0.65;//green
+                img[(w*width + h) * 4 + 2] = 0.0;//blue
+                img[(w*width + h) * 4 + 3] = 1.0;//alpha    
+            }
+            else if (distance_to_center > radius && distance_to_center <= 200) {
+                float mixed_alpha = (distance_to_center - 150)/(200 - 150);
+                img[(w*width + h) * 4 + 0] = 1.0;//red
+                img[(w*width + h) * 4 + 1] = 0.65;//green
+                img[(w*width + h) * 4 + 2] = 0.0;//blue
+                img[(w*width + h) * 4 + 3] = 1 - mixed_alpha;//alpha    
+            }
+            else {
+                img[(w*width + h) * 4 + 0] = 0.0;//red
+                img[(w*width + h) * 4 + 1] = 0.0;//green
+                img[(w*width + h) * 4 + 2] = 0.0;//blue
+                img[(w*width + h) * 4 + 3] = 0.0;//alpha    
+            }
+           
 
         }
     }

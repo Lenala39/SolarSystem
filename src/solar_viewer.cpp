@@ -636,7 +636,7 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     color_shader_.set_uniform("greyscale", (int)greyscale_);
     sun_.draw();
 
-    // stars 
+// stars 
     
     m_matrix = mat4::scale(stars_.radius_);
     mv_matrix = _view * m_matrix;
@@ -646,6 +646,21 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     color_shader_.set_uniform("tex", 0);
     color_shader_.set_uniform("greyscale", (int)greyscale_);
     stars_.draw();
+    
+    //sunglow
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    
+    m_matrix = mat4::scale(sunglow_.size_);
+    mv_matrix = _view * m_matrix;
+    mvp_matrix = _projection * mv_matrix;
+    color_shader_.use();
+    color_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+    color_shader_.set_uniform("tex", 0);
+    color_shader_.set_uniform("greyscale", (int)greyscale_);
+    sunglow_.draw();
+
+    
 
     // ship
     
