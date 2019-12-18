@@ -469,14 +469,19 @@ void Solar_viewer::paint()
     if (int(x_angle_) % 90 == 0) {
         x_angle_ += 1;
     }
-
+    
     if (in_ship_) {
         // hover slightly behind it and rotate along with it
+        radius = -1 * ship_.radius_;
+        center = ship_.pos_ + vec4(0,-radius,0,1); 
+        y_angle_ = ship_.angle_;       
     }
 
+    
+    
     eye    = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,0, radius * dist_factor_, 0.0) + center;
     up     = mat4::rotate_y(y_angle_) * mat4::rotate_x(x_angle_) * vec4(0,1,0,0);
-    
+
     view   = mat4::look_at(vec3(eye), (vec3)center, (vec3)up);
 
     yUp_ = up[1];
@@ -632,6 +637,7 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     sun_.draw();
 
     // stars 
+    
     m_matrix = mat4::scale(stars_.radius_);
     mv_matrix = _view * m_matrix;
     mvp_matrix = _projection * mv_matrix;
@@ -640,6 +646,22 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     color_shader_.set_uniform("tex", 0);
     color_shader_.set_uniform("greyscale", (int)greyscale_);
     stars_.draw();
+
+    // ship
+    
+    m_matrix = mat4::translate(vec3(ship_.pos_)) * mat4::rotate_y(ship_.angle_) * mat4::scale(ship_.radius_);
+    mv_matrix = _view * m_matrix;
+    mvp_matrix = _projection * mv_matrix;
+    normal_matrix = inverse(transpose(mv_matrix));
+    phong_shader_.use();
+    phong_shader_.set_uniform("modelview_projection_matrix", mvp_matrix);
+    phong_shader_.set_uniform("modelview_matrix", mv_matrix);
+    phong_shader_.set_uniform("normal_matrix", normal_matrix);
+    phong_shader_.set_uniform("light_position", light);
+    phong_shader_.set_uniform("tex", 0);
+    phong_shader_.set_uniform("greyscale", (int)greyscale_);
+    ship_.draw();
+
 
 
     //use phong shader for the planets

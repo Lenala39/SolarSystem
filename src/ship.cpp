@@ -25,6 +25,8 @@ bool Ship::load_model(const char* _filename)
 
 	// read OFF header
 	std::string s;
+	std::string s2;
+
 	ifs >> s;
 	if (s != "OFF")
 	{
@@ -43,7 +45,7 @@ bool Ship::load_model(const char* _filename)
 	*	- use cube.off for debugging and feel free to use your favourite spaceship mesh once your parser works.
 	*	- 3D modelling software is capable of reading and writing `.off` files. (for example, google "blender import .off")
 	**/
-
+	/*
 	// DELETE ME BEGIN
 	vertices_.push_back(vec3(0,0,2));
 	vertices_.push_back(vec3(1, 0, 0));
@@ -52,8 +54,40 @@ bool Ship::load_model(const char* _filename)
         indices_.push_back(1);
         indices_.push_back(2);
 	// DELETE ME END
+	*/
 
+	int num_vertices;
+	int num_faces;
+	int num_edges;
+	
+	ifs >> num_vertices;
+	ifs >> num_faces;
+	ifs >> num_edges;
 
+	float x, y, z;
+
+	for (int i = 0; i < num_vertices; i++) {
+		ifs >> x;
+		ifs >> y;
+		ifs >> z;
+		vertices_.push_back(vec3(x, y, z));
+
+	}
+	float inline_num_vert, index_x, index_y, index_z;
+	for(int j = 0; j < num_faces; j++) {
+		ifs >> inline_num_vert;
+		assert (inline_num_vert == 3);
+		ifs >> index_x;
+		ifs >> index_y;
+		ifs >> index_z;
+		indices_.push_back(index_x);
+		indices_.push_back(index_y);
+		indices_.push_back(index_z);
+
+	}
+	
+
+	
 
 	// close file
 	ifs.close();
