@@ -55,42 +55,40 @@ void main()
     //diffuse lighting
     vec3 diff = vec3(0,0,0);
     float diff_angle = dot(v2f_light, v2f_normal);
-	if (diff_angle > 0.1) {
+	if (diff_angle > 0.5) {
         diff = day_color * diff_angle;
         color = diff;
+        // mix with clouds
+        color = mix(color, vec3(cloud_color,cloud_color,cloud_color), cloud_color);
+
     }
-    else if(diff_angle <= 0.1 && diff_angle >= -0.1) {
-		float mixratio = (diff_angle - (-0.1)) / (0.2);
+    else if(diff_angle <= 0.5 && diff_angle >= 0) {
+		float mixratio = (diff_angle - (-0)) / (0.5);
         color = mix(night_color, (day_color * diff_angle), mixratio);
+        float cloud_mix = (2 * mixratio) - 1;
+        // mix with clouds
+        color = mix(color, vec3(cloud_color,cloud_color,cloud_color), cloud_mix * cloud_color);
+
     }
     else {
         color = night_color;
+        // mix with clouds
+        color = mix(color, vec3(cloud_color,cloud_color,cloud_color), -cloud_color);
+
     }
     
-    /*else if (diff_angle < 0.25 && diff_angle > -0.25) {
-		if(diff_angle < 0.5) {
-			color = mix(color, vec3(0,0,0), day_color);
-		}
-		else {
-			color = mix(color, vec3(0,0,0), night_color);
-		}
-	}*/
-
-
-    /*//specular light
+    //specular light
     vec3 spec = vec3(0,0,0);
     vec3 mirrored_light = vec3(0,0,0);
-    mirrored_light = reflect(v2f_light, v2f_normal);
+    mirrored_light = reflect(-v2f_light, v2f_normal);
     float spec_angle = dot(mirrored_light, v2f_view);
 
     if (diff_angle > 0 && spec_angle > 0) {
         spec = day_color * pow(spec_angle, shininess);
-        color = color + (spec * gloss_color);
+        color = color + (spec * gloss_color); //gloss map: if not gloss, then 0
     }
-    // mix with clouds
-    color = mix(color, vec3(1,1,1), cloud_color);*/
-
-
+    
+    
     // convert RGB color to YUV color and use only the luminance
     if (greyscale) color = vec3(0.299*color.r+0.587*color.g+0.114*color.b);
 

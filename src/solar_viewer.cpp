@@ -646,7 +646,6 @@ void Solar_viewer::draw_scene(mat4& _projection, mat4& _view)
     for(Planet* planet : planets_)
     {   
         
-
         m_matrix = planet->model_matrix_;
         mv_matrix  = _view * m_matrix;
         
