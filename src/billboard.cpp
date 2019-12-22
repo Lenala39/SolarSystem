@@ -91,6 +91,18 @@ void Billboard::computeBillboardAngles(const vec3 &billboard_to_eye)
     *       In this case, those angles should be identical to `angle_x_` and `angle_y_`.
     **/
 
+	float radial_dist; //from origin to point
+	float zenith_angle; //between zenith reference direction (z-axix) and line OP 0<z<pi
+	float azimuth_angle; //between azimuth reference direction (x-axis) and line OP 0<a<2pi
+
+	float vec_sum = pow(billboard_to_eye.x, 2) + pow(billboard_to_eye.y, 2) + pow(billboard_to_eye.z, 2);
+	radial_dist = sqrt(vec_sum);
+
+	zenith_angle = acos(billboard_to_eye.z / radial_dist);
+	azimuth_angle = atan2(billboard_to_eye.z, billboard_to_eye.x);
+
+	angle_x_ = zenith_angle;
+	angle_y_ = azimuth_angle;
 
 }
 
