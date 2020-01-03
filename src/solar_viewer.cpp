@@ -58,7 +58,7 @@ Solar_viewer::Solar_viewer(const char* _title, int _width, int _height)
 
     // rendering parameters
     greyscale_     = false;
-    view_mode_ = MONO;
+    view_mode_ = STEREO_ANAGLYPH; //TODO: change back to MONO
     fovy_ = 45;
     near_ = 0.01f;
     far_  = 20;
@@ -492,8 +492,15 @@ void Solar_viewer::paint()
     // mono rendering
     if (view_mode_ == MONO)
     {
+        // clear buffers and reset color mask
+        glClear(GL_COLOR_BUFFER_BIT);
+        glClear(GL_DEPTH_BUFFER_BIT);
+        glColorMask(1, 1, 1, 1);
         projection = mat4::perspective(fovy_, (float)width_/(float)height_, near_, far_);
         draw_scene(projection, view);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        
     }
 
 
@@ -517,8 +524,73 @@ void Solar_viewer::paint()
 
         double focal_distance = distance(eye, center) + 3.0*radius;
         double eye_separation = focal_distance * 0.008;
+        
+        
+        // get parameters for each eye (vec4)
+        vec4 left_eye, right_eye;
+        left_eye = eye - vec4(eye_separation, 0, 0, 0);
+        right_eye = eye + vec4(eye_separation, 0, 0, 0);
+        
+        float bottom, top, left, right;
+         //get viewing frustrum
+        bottom = near_ * (-1) * tan((fovy_ /2.0));
+        top = near_ * tan((fovy_/2));
 
-    }
+        //intermediate left/right which will be shifted for left/right
+        left = bottom * (width_ / height_); 
+        right = top * (width_ / height_); 
+
+        float l_left, l_right, r_left, r_right;
+        
+        //left eye
+        l_left = left - (eye_separation / focal_distance * near_);
+        l_right = right - (eye_separation / focal_distance * near_);
+        
+        //right eye
+        r_left = left + (eye_separation / focal_distance * near_);
+        r_right = right + (eye_separation / focal_distance * near_);
+
+        mat4 left_frustrum = mat4::frustum(l_left, l_right, bottom, top, near_, far_);
+        mat4 right_frustrum = mat4::frustum(r_left, r_right, bottom, top, near_, far_);
+
+        //mat4 left_view = mat4::look_at((vec3)left_eye, (vec3)center, (vec3)up); 
+        mat4 left_view = view * mat4::translate(vec3(eye_separation, 0, 0));
+        //mat4 right_view = mat4::look_at((vec3)right_eye, (vec3)center, (vec3)up); 
+        mat4 right_view = view * mat4::translate(vec3(eye_separation, 0, 0));
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+            
+        if (view_mode_ == STEREO_ANAGLYPH) {
+            std::cout<<"in stereo anaglyph";
+            glClear(GL_DEPTH_BUFFER_BIT);
+            // TODO: blue for left eye (or red?)
+            glColorMask(0,0,1,1);
+            draw_scene(left_frustrum, left_view);
+
+            // TODO: red for right eye (or blue?)
+            glColorMask(1, 0, 0, 1);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            draw_scene(right_frustrum, right_view);
+
+        }
+        
+        else if(view_mode_ == STEREO_SPLIT) {
+            std::cout<<"in stereo split";
+            
+            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            glColorMask(1, 1, 1, 1);
+
+            projection = mat4::perspective(fovy_, (float)width_/(float)height_, near_, far_);
+            draw_scene(projection, view);
+        }
+        else {
+            // do nothing?
+            std::cout<<"in else";
+        }
+
+
+    }   
 }
 
 //-----------------------------------------------------------------------------
@@ -526,16 +598,7 @@ void Solar_viewer::paint()
 void Solar_viewer::update_planets_positions()
 {   
     sun_.model_matrix_ = mat4::rotate_y(sun_.angle_self_) * mat4::scale(sun_.radius_);
-    
-    /*mercury_.model_matrix_ = mat4::translate(vec4(mercury_.distance_, 0, 0,1)) * mat4::scale(mercury_.radius_) * mat4::rotate_y(mercury_.angle_self_) * mat4::rotate_y(mercury_.angle_sun_);
-    venus_.model_matrix_ = mat4::translate(vec4(venus_.distance_, 0, 0,1)) * mat4::scale(venus_.radius_) * mat4::rotate_y(venus_.angle_self_) * mat4::rotate_y(venus_.angle_sun_);
-    earth_.model_matrix_ = mat4::translate(vec4(earth_.distance_, 0, 0,1)) * mat4::scale(earth_.radius_) * mat4::rotate_y(earth_.angle_self_) * mat4::rotate_y(earth_.angle_sun_);
-    mars_.model_matrix_ = mat4::translate(vec4(mercury_.distance_ + 1, 0, 0,1)) * mat4::scale(mars_.radius_) * mat4::rotate_y(mars_.angle_self_) * mat4::rotate_y(mars_.angle_sun_);
-    jupiter_.model_matrix_ = mat4::translate(vec4(jupiter_.distance_, 0, 0,1)) * mat4::scale(jupiter_.radius_) * mat4::rotate_y(jupiter_.angle_self_) * mat4::rotate_y(jupiter_.angle_sun_);
-    moon_.model_matrix_ = mat4::translate(vec4(moon_.distance_, 0, 0,1)) * mat4::scale(moon_.radius_) * mat4::rotate_y(moon_.angle_self_) * mat4::rotate_y(moon_.angle_sun_);
-    */
-
-    
+        
     for (Planet* p: planets_) {
         // place the moon 
         if (p->name_ == "moon") {
