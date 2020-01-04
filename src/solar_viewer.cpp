@@ -58,7 +58,7 @@ Solar_viewer::Solar_viewer(const char* _title, int _width, int _height)
 
     // rendering parameters
     greyscale_     = false;
-    view_mode_ = MONO; //TODO: change back to MONO
+    view_mode_ = MONO; 
     fovy_ = 45;
     near_ = 0.01f;
     far_  = 20;
@@ -493,17 +493,12 @@ void Solar_viewer::paint()
     if (view_mode_ == MONO)
     {
         // clear buffers and reset color mask
-    
         glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_DEPTH_BUFFER_BIT);
         glColorMask(1, 1, 1, 0);
 
         projection = mat4::perspective(fovy_, (float)width_/(float)height_, near_, far_);
         draw_scene(projection, view);
-        
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
-        glClear(GL_DEPTH_BUFFER_BIT);
-        // glClear(GL_COLOR_BUFFER_BIT); //TODO: THIS LINE IS SHIT AND BREAKS THE CODE
         
     } 
 
@@ -526,7 +521,8 @@ void Solar_viewer::paint()
          *	 
          */
 
-
+        
+        // compute focal distance and eye sep
         double focal_distance = distance(eye, center) + 3.0*radius;
         double eye_separation = focal_distance * 0.008;
         
@@ -535,9 +531,9 @@ void Solar_viewer::paint()
         vec4 left_eye, right_eye;
         left_eye = eye - vec4(eye_separation, 0, 0, 0);
         right_eye = eye + vec4(eye_separation, 0, 0, 0);
-        
+
+        //get viewing frustrum        
         float bottom, top, left, right;
-         //get viewing frustrum
         bottom = near_ * (-1) * tan((fovy_ /2.0));
         top = near_ * tan((fovy_/2));
 
@@ -565,6 +561,7 @@ void Solar_viewer::paint()
         
             
         if (view_mode_ == STEREO_ANAGLYPH) {
+            // clear green buffer
             glColorMask(0,1,0,1);
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
             glClear(GL_DEPTH_BUFFER_BIT);
@@ -576,6 +573,7 @@ void Solar_viewer::paint()
 
             // TODO: red for right eye (or blue?)
             glColorMask(1, 0, 0, 1);
+            // clear buffers
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
             glClear(GL_DEPTH_BUFFER_BIT);
             glClear(GL_COLOR_BUFFER_BIT);
@@ -603,10 +601,6 @@ void Solar_viewer::paint()
             glViewport(0, 0, width_, height_);
             
 
-        }
-        else {
-            // do nothing?
-            std::cout<<"in else";
         }
 
 
