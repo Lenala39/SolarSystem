@@ -58,7 +58,7 @@ Solar_viewer::Solar_viewer(const char* _title, int _width, int _height)
 
     // rendering parameters
     greyscale_     = false;
-    view_mode_ = STEREO_ANAGLYPH; //TODO: change back to MONO
+    view_mode_ = MONO; //TODO: change back to MONO
     fovy_ = 45;
     near_ = 0.01f;
     far_  = 20;
@@ -493,15 +493,19 @@ void Solar_viewer::paint()
     if (view_mode_ == MONO)
     {
         // clear buffers and reset color mask
+    
         glClear(GL_COLOR_BUFFER_BIT);
         glClear(GL_DEPTH_BUFFER_BIT);
-        glColorMask(1, 1, 1, 1);
+        glColorMask(1, 1, 1, 0);
+
         projection = mat4::perspective(fovy_, (float)width_/(float)height_, near_, far_);
         draw_scene(projection, view);
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
         
-    }
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
+        glClear(GL_DEPTH_BUFFER_BIT);
+        // glClear(GL_COLOR_BUFFER_BIT); //TODO: THIS LINE IS SHIT AND BREAKS THE CODE
+        
+    } 
 
 
     // stereo rendering
@@ -521,6 +525,7 @@ void Solar_viewer::paint()
          *		Hint: You need to clear the depth buffer between the two `draw_scene` calls.
          *	 
          */
+
 
         double focal_distance = distance(eye, center) + 3.0*radius;
         double eye_separation = focal_distance * 0.008;
@@ -557,32 +562,47 @@ void Solar_viewer::paint()
         mat4 left_view = view * mat4::translate(vec3(eye_separation, 0, 0));
         //mat4 right_view = mat4::look_at((vec3)right_eye, (vec3)center, (vec3)up); 
         mat4 right_view = view * mat4::translate(vec3(eye_separation, 0, 0));
-        glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+        
             
         if (view_mode_ == STEREO_ANAGLYPH) {
-            std::cout<<"in stereo anaglyph";
+            glColorMask(0,1,0,1);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
             glClear(GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT);
+
             // TODO: blue for left eye (or red?)
             glColorMask(0,0,1,1);
             draw_scene(left_frustrum, left_view);
 
             // TODO: red for right eye (or blue?)
             glColorMask(1, 0, 0, 1);
+            glClearColor(0.0f, 0.0f, 0.0f, 1.0f );
             glClear(GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT);
             draw_scene(right_frustrum, right_view);
 
         }
         
         else if(view_mode_ == STEREO_SPLIT) {
-            std::cout<<"in stereo split";
             
-            glClear(GL_COLOR_BUFFER_BIT);
+            // clear all buffers and render all colours 
             glClear(GL_DEPTH_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT);
             glColorMask(1, 1, 1, 1);
 
-            projection = mat4::perspective(fovy_, (float)width_/(float)height_, near_, far_);
-            draw_scene(projection, view);
+            //LEFT IMAGE
+            // set viewport to left bottom corner but make it only span half width
+            glViewport(0,0, (width_ / 2.0), height_);
+            draw_scene(left_frustrum, left_view);
+
+            // RIGHT IMAGE
+            // set viewport to center of x-axis and span second half of width
+            glViewport((width_/2), 0, (width_/2), height_);
+            glClear(GL_DEPTH_BUFFER_BIT);
+            draw_scene(right_frustrum, right_view);
+            glViewport(0, 0, width_, height_);
+            
+
         }
         else {
             // do nothing?
